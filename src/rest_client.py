@@ -128,6 +128,12 @@ class KrakenRESTClient:
             method='POST'
         ).send()
     
+    def get_websockets_token(self) -> RESTKrakenResponse:
+        return RESTKrakenAuthenticatedRequest(
+            endpoint=f"{self.base_url}/0/private/GetWebSocketsToken",
+            method='POST'
+        ).send()
+    
     def custom_request(
         self, endpoint: str,method: str, 
         query_params: dict = None, payload: dict = None,
