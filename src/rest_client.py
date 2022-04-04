@@ -25,12 +25,18 @@ class RESTKrakenResponse:
             self.out_json = self._raw_response.json()['error']
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(success={self.status_ok}, out_json={self.out_json.__repr__()})"
+        return f"{self.__class__.__name__}(success={self.status_ok}, out_json={self.out_json})"
 
 
 class RESTKrakenRequest:
-    def __init__(self, endpoint: str, method: str, payload: dict = None) -> None:
+    def __init__(
+        self, 
+        endpoint: str, method: str, 
+        query_params: dict = None,
+        payload: dict = None
+    ) -> None:
         self.endpoint = endpoint
+        self.query_params = query_params
         self.payload = payload
         self.method = method.lower()
 
@@ -38,18 +44,24 @@ class RESTKrakenRequest:
         return RESTKrakenResponse(
             getattr(requests, self.method)(
                 url=self.endpoint,
-                data=self.payload
+                data=self.payload,
+                params=self.query_params
             )
         )
 
     def __repr__(self) -> str:
         return (f"{self.__class__.__name__}(endpoint={self.endpoint}, "
-                f"method={self.method.upper()}, payload={self.payload.__repr__()})")
+                f"method={self.method.upper()}, payload={self.payload})")
 
 
 class RESTKrakenAuthenticatedRequest(RESTKrakenRequest):
-    def __init__(self, endpoint: str, method: str, payload: dict = None) -> None:
-        super().__init__(endpoint, method, payload)
+    def __init__(
+        self, 
+        endpoint: str, method: str, 
+        query_params: dict = None, 
+        payload: dict = None
+    ) -> None:
+        super().__init__(endpoint, method, query_params, payload)
         self.pk = os.getenv('KRAKEN_PK', None)
         self.api_key = os.getenv('KRAKEN_KEY', None)
         if self.pk is None or self.api_key is None:
@@ -58,7 +70,7 @@ class RESTKrakenAuthenticatedRequest(RESTKrakenRequest):
                 "environment variables to be set: KRAKEN_PK and KRAKEN_KEY"
             )
 
-    def _get_kraken_signature(self, payload):
+    def _gen_kraken_signature(self, payload) -> str:
         # https://docs.kraken.com/rest/#section/Authentication/Headers-and-Signature
         postdata = urllib.parse.urlencode(payload)
         encoded = (payload['nonce'] + postdata).encode()
@@ -73,7 +85,7 @@ class RESTKrakenAuthenticatedRequest(RESTKrakenRequest):
         return int(datetime.now().timestamp() * 1e3)
     
     def _gen_auth_headers(self, payload) -> dict:
-        api_sign = self._get_kraken_signature(payload)
+        api_sign = self._gen_kraken_signature(payload)
         return {
             'API-Key': self.api_key,
             'API-Sign': api_sign
@@ -114,4 +126,15 @@ class KrakenRESTClient:
         return RESTKrakenAuthenticatedRequest(
             endpoint=f"{self.base_url}/0/private/Balance",
             method='POST'
+        ).send()
+    
+    def custom_request(
+        self, endpoint: str,method: str, 
+        query_params: dict = None, payload: dict = None,
+    ):
+        return RESTKrakenRequest(
+            endpoint=endpoint,
+            method=method,
+            query_params=query_params,
+            payload=payload
         ).send()
