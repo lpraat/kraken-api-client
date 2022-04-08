@@ -30,8 +30,8 @@ class RESTKrakenResponse:
 
 class RESTKrakenRequest:
     def __init__(
-        self, 
-        endpoint: str, method: str, 
+        self,
+        endpoint: str, method: str,
         query_params: dict = None,
         payload: dict = None
     ) -> None:
@@ -56,9 +56,9 @@ class RESTKrakenRequest:
 
 class RESTKrakenAuthenticatedRequest(RESTKrakenRequest):
     def __init__(
-        self, 
-        endpoint: str, method: str, 
-        query_params: dict = None, 
+        self,
+        endpoint: str, method: str,
+        query_params: dict = None,
         payload: dict = None
     ) -> None:
         super().__init__(endpoint, method, query_params, payload)
@@ -70,7 +70,7 @@ class RESTKrakenAuthenticatedRequest(RESTKrakenRequest):
                 "environment variables to be set: KRAKEN_PK and KRAKEN_KEY"
             )
 
-    def _gen_kraken_signature(self, payload) -> str:
+    def _gen_kraken_signature(self, payload: str) -> str:
         # https://docs.kraken.com/rest/#section/Authentication/Headers-and-Signature
         postdata = urllib.parse.urlencode(payload)
         encoded = (payload['nonce'] + postdata).encode()
@@ -83,14 +83,14 @@ class RESTKrakenAuthenticatedRequest(RESTKrakenRequest):
 
     def _gen_nonce(self) -> int:
         return int(datetime.now().timestamp() * 1e3)
-    
+
     def _gen_auth_headers(self, payload) -> dict:
         api_sign = self._gen_kraken_signature(payload)
         return {
             'API-Key': self.api_key,
             'API-Sign': api_sign
         }
-    
+
     def send(self) -> RESTKrakenResponse:
         nonce_dict = { 'nonce': str(self._gen_nonce()) }
 
@@ -109,7 +109,7 @@ class RESTKrakenAuthenticatedRequest(RESTKrakenRequest):
             )
         )
 
-class KrakenRESTClient:
+class RESTKrakenClient:
     def __init__(
         self,
         base_url: str = "https://api.kraken.com"
@@ -121,23 +121,23 @@ class KrakenRESTClient:
             endpoint=f"{self.base_url}/0/public/SystemStatus",
             method='GET',
         ).send()
-    
+
     def account_balance(self) -> RESTKrakenResponse:
         return RESTKrakenAuthenticatedRequest(
             endpoint=f"{self.base_url}/0/private/Balance",
             method='POST'
         ).send()
-    
+
     def get_websockets_token(self) -> RESTKrakenResponse:
         return RESTKrakenAuthenticatedRequest(
             endpoint=f"{self.base_url}/0/private/GetWebSocketsToken",
             method='POST'
         ).send()
-    
+
     def custom_request(
-        self, endpoint: str,method: str, 
+        self, endpoint: str,method: str,
         query_params: dict = None, payload: dict = None,
-    ):
+    ) -> RESTKrakenResponse:
         return RESTKrakenRequest(
             endpoint=endpoint,
             method=method,
