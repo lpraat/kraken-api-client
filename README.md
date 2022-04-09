@@ -54,7 +54,8 @@ async def handle_msg(msg: WSKrakenInMsg):
             print(msg.payload)
 
 async def main():
-    # By default, both a "public" socket and a "private" socket are created, if you want to just open the public one set open_auth_socket to False.
+    # By default, both a "public" socket and a "private" socket are created, 
+    # if you want to just open the public one set open_auth_socket to False.
     async with WSKrakenClient(open_auth_socket=True) as client:
         # Receive public messages
         recv_task = asyncio.create_task(recv_msgs(client.websocket))
@@ -64,7 +65,8 @@ async def main():
         # Receive ticker information on currency pair
         await client.subscribe_ticker(pair=["BTC/EUR"])
 
-        # At least one private message should be subscribed to keep the authenticated client connection open therefore we subscribe to openOrders
+        # At least one private message should be subscribed to keep the authenticated client 
+        # connection open therefore we subscribe to openOrders
         # We can use the REST client to retrieve a valid token for websockets authentication
         kc = RESTKrakenClient()
         auth_token = kc.get_websockets_token().out_json['token']
