@@ -185,14 +185,12 @@ class WSKrakenClient:
     async def add_order(
         self, token: str, ordertype: str, type: str, pair: str, volume: str, price: str = None,
         price2: str = None, leverage: int = None, oflags: str = None, starttm: str = None, expiretm: str = None,
-        deadline: str = None, userref: str = None, validate: bool = None, close_ordertype: str = None,
+        deadline: str = None, userref: str = None, validate: str = None, close_ordertype: str = None,
         close_price: str = None, close_price2: str = None, timeinforce: str = None,
         reqid: int = None
     ) -> None:
         _locals = locals()
         del _locals['self']
-
-        # TODO check validate field, backend expects string but "True" was placed anyway
 
         def rename_key(k):
             key_to_new = {
