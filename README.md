@@ -19,7 +19,7 @@ print(kc.system_status())
 #   - "Get Websockets Token"
 # For other endpoints you can use the custom_request method:
 # e.g., for the "Add Order"
-print(kc.custom_auth_request(  # use custom_request for non-authenticated requests
+print(kc.custom_auth_request(  # Instead, use kc.custom_request for non-authenticated requests
     endpoint="https://api.kraken.com/0/private/AddOrder",
     method='POST',
     payload=dict(
